@@ -1,0 +1,13 @@
+# Prepend sudo to the current command line
+# For when you forgot you're not root
+
+emulate -L zsh
+
+if [[ -n $BUFFER ]]; then
+  if [[ $BUFFER == sudo\ * ]]; then
+    BUFFER="${BUFFER#sudo }"
+  else
+    BUFFER="sudo $BUFFER"
+  fi
+  CURSOR=$#BUFFER
+fi

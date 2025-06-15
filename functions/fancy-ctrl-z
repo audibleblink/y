@@ -1,0 +1,12 @@
+# Toggle between foreground and background for the last job
+# Usually your suspended vim/nvim session
+
+emulate -L zsh
+
+if [[ $#BUFFER -eq 0 ]]; then
+  BUFFER="fg"
+  zle accept-line
+else
+  zle push-input
+  zle clear-screen
+fi

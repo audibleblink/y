@@ -1,0 +1,90 @@
+# Browse projects in your project directory
+# Like a "smart" workspace switcher but with less JavaScript
+
+emulate -L zsh
+
+# Configuration
+local project_dir="${Y_PROJECT_DIR:-$HOME/code}"
+
+# Use fzf if available, otherwise fall back to completion
+if [[ "$Y_HAS_FZF" == "true" ]]; then
+  local fzf_opts="${Y_FZF_OPTS:---reverse --height=50%}"
+  local popup_enabled="${Y_POPUP_ENABLED:-true}"
+
+  # Create temp files safely
+  local umask=117
+  local in=$(mktemp -t y-projects.XXX -p "${XDG_RUNTIME_DIR:-/tmp}")
+  local out=$(mktemp -t y-projects.XXX -p "${XDG_RUNTIME_DIR:-/tmp}")
+  trap "rm -f -- ${in} ${out} 2>/dev/null" EXIT
+
+  # Check if project directory exists
+  if [[ ! -d "$project_dir" ]]; then
+    echo "Project directory not found: $project_dir" > "$in"
+    echo "Set Y_PROJECT_DIR to change location" >> "$in"
+  else
+    # Find all directories in project dir (one level deep)
+    # Using fd if available, otherwise find
+    if command -v fd &>/dev/null; then
+      fd . "$project_dir" -d 1 -t d | xargs -n1 basename > "$in"
+    else
+      find "$project_dir" -maxdepth 1 -type d -not -path "$project_dir" \
+        -exec basename {} \; | sort > "$in"
+    fi
+    
+    # Handle empty project directory
+    if [[ ! -s "$in" ]]; then
+      echo "No projects found in $project_dir" > "$in"
+    fi
+  fi
+
+  # Use tmux popup if available and enabled
+  if [[ -v TMUX && "$popup_enabled" == "true" ]]; then
+    tmux popup -b rounded -E "fzf ${fzf_opts} <$in >$out"
+    local selected=$(cat "$out")
+  else
+    local selected=$(fzf ${=fzf_opts} <"$in")
+  fi
+
+  # Execute cd if something was selected
+  if [[ -n "$selected" && -d "$project_dir/$selected" ]]; then
+    BUFFER="cd ${project_dir}/${selected}"
+    zle accept-line
+  fi
+else
+  # Fallback: use zsh completion
+  # Check if project directory exists
+  if [[ ! -d "$project_dir" ]]; then
+    print "Project directory not found: $project_dir" >&2
+    print "Set Y_PROJECT_DIR to change location" >&2
+    return 1
+  fi
+  
+  # Get project list
+  local -a project_items project_names
+  local proj
+  
+  # Find all directories
+  for proj in "$project_dir"/*(N/); do
+    local name="${proj:t}"
+    project_names+=("$name")
+    project_items+=("$proj:$name")
+  done
+  
+  if (( ${#project_names} == 0 )); then
+    print "No projects found in $project_dir" >&2
+    return 1
+  fi
+  
+  # Set up buffer and completion
+  BUFFER="cd ${project_dir}/"
+  
+  # Define custom completion
+  zle -C y-projects-complete menu-complete _y_projects_complete
+  
+  _y_projects_complete() {
+    compadd -d project_items -Q -- "${project_names[@]}"
+  }
+  
+  # Trigger completion
+  zle y-projects-complete
+fi

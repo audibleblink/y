@@ -1,0 +1,62 @@
+# Jump through directory history using the directory stack
+# Because apparently `dirs -v` needs a product name and a logo
+
+emulate -L zsh
+
+# Use fzf if available, otherwise fall back to completion
+if [[ "$Y_HAS_FZF" == "true" ]]; then
+  # Configuration
+  local fzf_opts="${Y_FZF_OPTS:---reverse --height=50%}"
+  local popup_enabled="${Y_POPUP_ENABLED:-true}"
+
+  # Create temp files safely
+  local umask=117
+  local in=$(mktemp -t y-jump.XXX -p "${XDG_RUNTIME_DIR:-/tmp}")
+  local out=$(mktemp -t y-jump.XXX -p "${XDG_RUNTIME_DIR:-/tmp}")
+  trap "rm -f -- ${in} ${out} 2>/dev/null" EXIT
+
+  # Get directory stack
+  dirs -v > "$in"
+
+  # Use tmux popup if available and enabled
+  if [[ -v TMUX && "$popup_enabled" == "true" ]]; then
+    tmux popup -b rounded -E "fzf ${fzf_opts} <$in >$out" 
+    local selected=$(awk '{print $2}' "$out")
+  else
+    local selected=$(dirs -v | fzf ${=fzf_opts} | awk '{print $2}')
+  fi
+
+  # Execute cd if something was selected
+  if [[ -n "$selected" ]]; then
+    BUFFER="cd ${selected}"
+    zle accept-line
+  fi
+else
+  # Fallback: use zsh completion
+  # Build a completion string from the directory stack
+  local -a dirstack_items
+  local i=0
+  while IFS=$'\t' read -r num dir; do
+    # Remove leading spaces from dir
+    dir="${dir#"${dir%%[![:space:]]*}"}"
+    dirstack_items+=("$dir:[$num] $dir")
+  done < <(dirs -v)
+  
+  # Set up completion for this specific case
+  BUFFER="cd "
+  
+  # Use zle's menu completion
+  zle -C y-jump-complete menu-complete _y_jump_complete
+  
+  # Define the completion function
+  _y_jump_complete() {
+    local -a completions
+    for item in "${dirstack_items[@]}"; do
+      completions+=("${item%%:*}")
+    done
+    compadd -d dirstack_items -Q -- "${completions[@]}"
+  }
+  
+  # Trigger the completion
+  zle y-jump-complete
+fi

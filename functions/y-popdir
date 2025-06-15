@@ -1,0 +1,8 @@
+# Pop a directory from the stack
+# The most complex implementation of 'cd -' you've ever seen
+
+emulate -L zsh
+
+# Just run popd, but make it visible in the command line
+BUFFER="popd"
+zle accept-line

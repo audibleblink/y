@@ -1,0 +1,13 @@
+# Create a new tmux window with a floating terminal
+# Because sometimes you need a quick terminal without losing context
+
+emulate -L zsh
+
+if [[ -v TMUX ]]; then
+  tmux new-window -n "float" -c "$PWD"
+else
+  # If not in tmux, just clear the command line
+  # Could alternatively open a new terminal if you have a command for that
+  BUFFER=""
+  zle clear-screen
+fi

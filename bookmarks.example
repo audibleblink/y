@@ -1,0 +1,34 @@
+# Example bookmarks file for y plugin
+# Source this file by setting Y_BOOKMARKS_FILE
+
+# Development
+hash -d code="$HOME/code"
+hash -d work="$HOME/work"
+hash -d projects="$HOME/projects"
+
+# Config files
+hash -d config="$HOME/.config"
+hash -d dots="$HOME/.dotfiles"
+hash -d vim="$HOME/.config/nvim"
+hash -d zsh="$HOME/.config/zsh"
+
+# Common directories
+hash -d dl="$HOME/Downloads"
+hash -d docs="$HOME/Documents"
+hash -d pics="$HOME/Pictures"
+hash -d desktop="$HOME/Desktop"
+
+# System locations
+hash -d etc="/etc"
+hash -d log="/var/log"
+hash -d tmp="/tmp"
+
+# Package managers
+hash -d brew="/opt/homebrew"
+hash -d npm="$HOME/.npm"
+hash -d cargo="$HOME/.cargo"
+
+# Cloud storage (examples)
+# hash -d dropbox="$HOME/Dropbox"
+# hash -d drive="$HOME/Google Drive"
+# hash -d icloud="$HOME/Library/Mobile Documents"
