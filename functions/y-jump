@@ -32,31 +32,17 @@ if [[ "$Y_HAS_FZF" == "true" ]]; then
     zle accept-line
   fi
 else
-  # Fallback: use zsh completion
-  # Build a completion string from the directory stack
-  local -a dirstack_items
-  local i=0
-  while IFS=$'\t' read -r num dir; do
-    # Remove leading spaces from dir
-    dir="${dir#"${dir%%[![:space:]]*}"}"
-    dirstack_items+=("$dir:[$num] $dir")
-  done < <(dirs -v)
+  # Fallback: use pushd/popd directly with numeric argument
+  # Show the directory stack to the user
+  print -l "Directory stack:" >&2
+  dirs -v >&2
+  print "" >&2
+  print "Usage: Type 'cd ~N' where N is the stack number, or use 'pushd +N'" >&2
   
-  # Set up completion for this specific case
-  BUFFER="cd "
+  # Set up buffer for user to complete the command
+  BUFFER="cd ~"
+  CURSOR=${#BUFFER}
   
-  # Use zle's menu completion
-  zle -C y-jump-complete menu-complete _y_jump_complete
-  
-  # Define the completion function
-  _y_jump_complete() {
-    local -a completions
-    for item in "${dirstack_items[@]}"; do
-      completions+=("${item%%:*}")
-    done
-    compadd -d dirstack_items -Q -- "${completions[@]}"
-  }
-  
-  # Trigger the completion
-  zle y-jump-complete
+  # Redraw the line
+  zle redisplay
 fi

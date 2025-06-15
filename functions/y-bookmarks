@@ -38,32 +38,26 @@ if [[ "$Y_HAS_FZF" == "true" ]]; then
     zle accept-line
   fi
 else
-  # Fallback: use zsh's native named directory expansion
-  # Get all hash -d entries
-  local -a bookmark_items bookmark_names
-  local name path
+  # Fallback: show bookmarks and use native ~name expansion
+  local -a bookmarks
   
-  # Parse hash -d output
-  while IFS='=' read -r name path; do
-    bookmark_names+=("~$name")
-    bookmark_items+=("$path:~$name - $path")
-  done < <(hash -d 2>/dev/null )
+  # Show available bookmarks to the user
+  print -l "Available bookmarks:" >&2
+  hash -d | column -s '=' -t >&2
   
-  if (( ${#bookmark_names} == 0 )); then
+  if [[ -z "$(hash -d 2>/dev/null)" ]]; then
+    print "" >&2
     print "No bookmarks found. Create some with: hash -d name=/path/to/dir" >&2
     return 1
   fi
   
-  # Set up buffer with cd and trigger completion
-  BUFFER="cd "
+  print "" >&2
+  print "Usage: Type 'cd ~' and press TAB to see completions" >&2
   
-  # Define custom completion
-  zle -C y-bookmarks-complete menu-complete _y_bookmarks_complete
+  # Set up buffer for named directory expansion
+  BUFFER="cd ~"
+  CURSOR=${#BUFFER}
   
-  _y_bookmarks_complete() {
-    compadd -d bookmark_items -Q -- "${bookmark_names[@]}"
-  }
-  
-  # Trigger completion
-  zle y-bookmarks-complete
+  # Redraw the line  
+  zle redisplay
 fi

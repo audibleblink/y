@@ -1,8 +1,7 @@
-# y - Because reading zsh documentation is apparently harder than writing Rust
 
 > "What if zsh's built-in directory stack, hash -d bookmarks, and 40 years of shell history were good enough already... but with more GitHub stars?"
 
-## Why y?
+## Y?
 
 Did you know:
 - `dirs -v` has existed since before you were born
@@ -78,13 +77,24 @@ export Y_BOOKMARKS_FILE="$HOME/.config/y/bookmarks"
 ## FAQ
 
 **Q: How does it compare to zoxide/z/autojump/fasd?**  
-A: It doesn't have a README with benchmarks, so it must be slower.
+A: It doesn't have a README with benchmarks, so it must be slower. But we know you love stats, so here we go:
+```
+❯❯ y-stats
+y statistics:
+  Directories in stack:   6
+  Named directories:      9
+  Project directory:      ~/code
+  Projects found:         26
+  Rust binaries used:     0
+  Databases corrupted:    0
+  Time saved by not reading docs: ∞
+```
 
 **Q: Does it use machine learning?**  
 A: No, it uses `fzf`, which is like machine learning but deterministic. If you don't have fzf, it uses tab completion, which is like machine learning but from 1978.
 
 **Q: What if I don't have fzf installed?**  
-A: Then it falls back to zsh's native tab completion. You know, the thing that's been there all along. Press Tab after the keybinding and select from the menu. Revolutionary.
+A: Then it shows you what's available and sets up the command line for you to use zsh's built-in tab completion. You know, the tab completion that's been there since before fzf was a twinkle in a Rust developer's eye. Just press TAB like it's 1990.
 
 **Q: Can I import my zoxide database?**  
 A: Your zoxide database is just your shell history with extra steps. Just use your shell.
@@ -107,7 +117,7 @@ WTFPL - Because if you need a license for 50 lines of shell script, we need to h
 
 
 ## OK But Really...
-Put your pitchforks down. It's a joke repo I made to settle an argument.
+Put your pitchforks down. It's a joke repo I made for an event.
 Claude Code made this when I `cd`'d into my zsh dotfiles and gave it the prompt
 ```
 │ > create a zsh plugin called "y". the readme    │
@@ -126,3 +136,5 @@ Claude Code made this when I `cd`'d into my zsh dotfiles and gave it the prompt
 ```
 
 Claude's pretty sassy.
+
+But since you're here: https://i.nit.gg/no-my-zsh

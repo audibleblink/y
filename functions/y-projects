@@ -51,7 +51,7 @@ if [[ "$Y_HAS_FZF" == "true" ]]; then
     zle accept-line
   fi
 else
-  # Fallback: use zsh completion
+  # Fallback: use tab completion
   # Check if project directory exists
   if [[ ! -d "$project_dir" ]]; then
     print "Project directory not found: $project_dir" >&2
@@ -59,32 +59,10 @@ else
     return 1
   fi
   
-  # Get project list
-  local -a project_items project_names
-  local proj
-  
-  # Find all directories
-  for proj in "$project_dir"/*(N/); do
-    local name="${proj:t}"
-    project_names+=("$name")
-    project_items+=("$proj:$name")
-  done
-  
-  if (( ${#project_names} == 0 )); then
-    print "No projects found in $project_dir" >&2
-    return 1
-  fi
-  
-  # Set up buffer and completion
+  # Simply set up the command line and let normal completion work
   BUFFER="cd ${project_dir}/"
+  CURSOR=${#BUFFER}
   
-  # Define custom completion
-  zle -C y-projects-complete menu-complete _y_projects_complete
-  
-  _y_projects_complete() {
-    compadd -d project_items -Q -- "${project_names[@]}"
-  }
-  
-  # Trigger completion
-  zle y-projects-complete
+  # Redraw the line
+  zle redisplay
 fi
